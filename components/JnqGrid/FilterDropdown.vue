@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon, FilterIcon } from "@heroicons/vue/solid";
+import { inject } from "vue";
 
-const props = defineProps({
-  filters: { type: Array, required: true },
-  columns: { type: Array, required: true },
-});
+// Inject
+const specialFilters = inject<Array<string>>("specialFilters");
 </script>
 
 <template>
@@ -31,7 +30,7 @@ const props = defineProps({
       <MenuItems
         class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none"
       >
-        <div class="py-1" v-for="filter in filters">
+        <div class="py-1" v-for="filter in specialFilters">
           <MenuItem v-slot="{ active }">
             <a
               href="#"

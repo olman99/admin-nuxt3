@@ -13,8 +13,10 @@ export default defineNuxtConfig({
     },
   },
   css: ["assets/css/tailwind.css"],
-  env: {
-    BASE_URL: process.env.BASE_URL,
+  runtimeConfig: {
+    public: {
+      API_URL: process.env.API_URL,
+    },
   },
   typescript: {
     strict: true,

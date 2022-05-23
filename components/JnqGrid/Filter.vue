@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { XIcon } from "@heroicons/vue/solid";
 
-defineEmits(["removeFilter"]);
+// Props
+interface Props {
+  label: string;
+  text: string;
+}
 
-const props = defineProps({
-  label: { type: String, required: true },
-  text: { type: String, required: true },
-});
+defineProps<Props>();
+
+// Emits
+defineEmits<{ (e: "removeFilter", label: string, text: string): void }>();
 </script>
 
 <template>

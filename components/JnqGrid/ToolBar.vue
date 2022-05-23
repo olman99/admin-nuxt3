@@ -1,16 +1,16 @@
 <script setup lang="ts">
-const props = defineProps({
-  hideFilterDropdown: { type: Boolean, required: false },
-  hidePagination: { type: Boolean, required: false },
-  hideOptions: { type: Boolean, required: false },
-  filters: { type: Array, required: true },
-  columns: { type: Array, required: true },
-  options: { type: Array, required: true },
-  min: { type: Number, required: true },
-  max: { type: Number, required: true },
-  total: { type: Number, required: true },
-});
+import navigate from "../../utils/navigate";
+import { GridOptions } from "../../models/grid";
 
+// Props
+interface Props {
+  hideFilterDropdown?: boolean;
+  hideOptions?: boolean;
+  options: Array<GridOptions>;
+}
+defineProps<Props>();
+
+// Methods
 const classOption = (variant: string): string => {
   let classCss: string = "";
   switch (variant) {
@@ -36,6 +36,21 @@ const classOption = (variant: string): string => {
 
   return classCss;
 };
+
+const handleActionButton = (button: any) => {
+  switch (button.type) {
+    case "redirect":
+      navigate(button.route);
+      break;
+    case "modal":
+      button.handler();
+      break;
+    case "alert":
+      break;
+    default:
+      break;
+  }
+};
 </script>
 
 <template>
@@ -44,25 +59,16 @@ const classOption = (variant: string): string => {
       <button
         type="button"
         class="inline-flex items-center px-3 py-2 border text-sm leading-4 font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
-        v-for="(opt, index) in (options as any)"
+        v-for="(button, index) in options"
         :key="index"
-        :class="classOption(opt.variant)"
+        :class="classOption(button.variant)"
+        @click="handleActionButton(button)"
       >
-        {{ opt.label }}
+        {{ button.label }}
       </button>
     </div>
     <div class="flex gap-2">
-      <JnqGridFilterDropdown
-        v-if="!hideFilterDropdown"
-        :filters="filters"
-        :columns="columns"
-      />
-      <JnqGridPagination
-        v-if="!hidePagination"
-        :min="min"
-        :max="max"
-        :total="total"
-      />
+      <JnqGridFilterDropdown v-if="!hideFilterDropdown" />
     </div>
   </div>
 </template>

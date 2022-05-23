@@ -1,28 +1,23 @@
-import axios from "@/utils/axios";
-import loginAdapter from "@/adapters/login.adapter";
-import { DefaultResponse } from "../models/response";
+import UserRepository from "../repositories/UserRepository";
 import { LoginData } from "../models/auth";
 
 class AuthService {
-  private path: string = "/admin/auth/";
-
-  public async login(username: string, password: string): Promise<boolean> {
-    const resp: DefaultResponse<LoginData> = await axios.post(
-      this.path + "login",
-      {
-        email: username,
-        password,
-      }
+  public async login(
+    username: string,
+    password: string
+  ): Promise<LoginData | null> {
+    const data: LoginData | null = await UserRepository.login(
+      username,
+      password
     );
 
-    if (resp.status) {
-      const data = loginAdapter(resp.data);
+    if (data !== null) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("refresh_token", data.refreshToken);
       localStorage.setItem("expireTime", data.expireTime);
-      return true;
+      return data;
     } else {
-      return false;
+      return null;
     }
   }
 }

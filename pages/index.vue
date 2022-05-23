@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import AuthService from "@/services/AuthService";
-import navigate from "@/utils/navigate";
+import AuthService from "../services/AuthService";
+import navigate from "../utils/navigate";
+import { LoginData } from "../models/auth";
+import { ref } from "vue";
+import { useUserdata } from "../composables/state";
 
-const router = useRouter();
-const username = useState<string>("username", () => "");
-const password = useState<string>("password", () => "");
+const username = ref<string>("");
+const password = ref<string>("");
 
 async function login() {
-  console.log("asdasdasd");
-
-  const isLogged: boolean = await AuthService.login(
+  const data: LoginData | null = await AuthService.login(
     username.value,
     password.value
   );
 
-  if (isLogged) {
+  const userData = useUserdata(data);
+
+  if (data !== null) {
     navigate("/dashboard");
   }
 }

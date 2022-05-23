@@ -44,30 +44,48 @@ const userNavigation = [
 const sidebarOpen = ref(false);
 
 const filters = [
-  { label: "Name", filter: "name.contains" },
-  { label: "Count", filter: "count.contains" },
-  { label: "AccountId", filter: "account_id.contains" },
+  { label: "ID", filter: "increment_id.containsIncrement" },
+  { label: "Canal", filter: "channel.equals" },
+  { label: "Tienda", filter: "store_name.contains" },
 ];
 const specialFilters = ["Last week", "Last Month", "All Roles"];
 const columns = [
   { label: "ID", field: "Id", class: "", hidden: true },
   {
-    label: "Name",
-    field: "Name",
+    label: "#",
+    field: "incrementId",
     class: "hidden lg:table-cell",
     type: "text",
   },
   {
-    label: "Count",
-    field: "Count",
+    label: "Canal",
+    field: "channel",
     class: "hidden sm:table-cell",
-    type: "money",
+    type: "text",
   },
   {
-    label: "AccountId",
-    field: "AccountId",
+    label: "Cliente",
+    field: "customerFirstName",
     class: "hidden sm:table-cell",
-    type: "badge",
+    type: "text",
+  },
+  {
+    label: "Celular",
+    field: "customerPhone",
+    class: "hidden sm:table-cell",
+    type: "text",
+  },
+  {
+    label: "Tienda",
+    field: "storeName",
+    class: "hidden sm:table-cell",
+    type: "text",
+  },
+  {
+    label: "Total",
+    field: "totalPaid",
+    class: "hidden sm:table-cell",
+    type: "money",
     variant: "primary",
   },
   {
@@ -79,23 +97,7 @@ const columns = [
         label: "Edit",
         type: "span",
         actionType: "redirect",
-        route: "/orders/new",
-      },
-      {
-        label: "Delete",
-        type: "button",
-        actionType: "modal",
-        variant: "success",
-        handler: () => console.log("hola modal from grid"),
-      },
-      {
-        label: "Execute",
-        type: "icon",
-        actionType: "exec-redirect",
-        variant: "danger",
-        handler: () => console.log("execute anything"),
-        route: "/orders/new",
-        icon: "SearchIcon",
+        route: "/dashboard",
       },
     ],
   },
@@ -105,23 +107,10 @@ const open = ref(false);
 
 const options = [
   {
-    label: "Crear Pedido",
-    variant: "primary",
-    type: "redirect",
-    route: "/orders/new",
-  },
-  {
     label: "Importar",
     variant: "success",
     type: "modal",
     handler: () => (open.value = true),
-  },
-  {
-    label: "Alert",
-    variant: "danger",
-    type: "alert",
-    action: "success",
-    message: "Seguro de realizar su pedido",
   },
 ];
 </script>
@@ -428,15 +417,15 @@ const options = [
         <div class="py-6">
           <div class="w-full px-4 sm:px-6 md:px-8">
             <JnqGrid
-              title="Listado de Cluster"
+              title="Listado de Pedidos"
               :filters="filters"
               :special-filters="specialFilters"
               :columns="columns"
               :columnsFilter="columns"
               :options="options"
-              :refreshData="UserService.getAll"
+              :refreshData="UserService.getAllOrders"
               currency-symbol="S/"
-              name="ClusterGrid"
+              name="OrdersGrid"
             />
           </div>
         </div>

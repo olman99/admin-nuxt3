@@ -1,31 +1,65 @@
 <script setup lang="ts">
 import { SearchIcon } from "@heroicons/vue/solid";
+import { ref, onUpdated } from "vue";
 
-const props = defineProps({
-  filters: { type: Array, required: true },
-  title: { type: String, required: true },
-});
+// Props
+interface Props {
+  filters: Array<{
+    label: string;
+    value: string;
+    filter: string;
+  }>;
+  queryFilters: Array<{
+    label: string;
+    value: string;
+    filter: string;
+  }>;
+  title: string;
+}
 
-const search = useState<string>("search", () => "");
-const searchFilters = useState<Array<{ label: string; value: string }>>(
-  "searchFilters",
-  () => []
-);
+const props = defineProps<Props>();
 
-const addFilter = (filter: string) => {
-  searchFilters.value.push({ label: filter, value: search.value });
+// Emits
+const emit = defineEmits<{
+  (
+    e: "updateFilters",
+    value: Array<{ label: string; value: string; filter: string }>
+  ): void;
+}>();
+
+// Data
+const search = ref<string>("");
+const searchFilters = ref<
+  Array<{ label: string; value: string; filter: string }>
+>([]);
+
+// Methods
+const addFilter = (filter: { label: string; filter: string }) => {
+  searchFilters.value.push({
+    label: filter.label,
+    value: search.value,
+    filter: filter.filter,
+  });
   search.value = "";
+  emit("updateFilters", searchFilters.value);
 };
 
 const removeFilter = (label: string, value: string) => {
   let index = searchFilters.value.findIndex(
-    (el) => el.label === label && el.value === value
+    (el: any) => el.label === label && el.value === value
   );
 
   if (index != -1) {
     searchFilters.value.splice(index, 1);
   }
+
+  emit("updateFilters", searchFilters.value);
 };
+
+// Lifecycle Hooks
+onUpdated(() => {
+  searchFilters.value = props.queryFilters;
+});
 </script>
 
 <template>
@@ -60,9 +94,9 @@ const removeFilter = (label: string, value: string) => {
             <a
               v-for="filter in filters"
               class="block py-0.5 px-5 cursor-pointer hover:bg-indigo-600 hover:text-white"
-              @click="addFilter(filter as string)"
+              @click="addFilter(filter as any)"
             >
-              Search for {{ filter }}:
+              Search for {{ (filter as any).label }}:
               <span x-text="textInput" class="font-semibold">{{ search }}</span>
             </a>
           </div>

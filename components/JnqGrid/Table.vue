@@ -1,19 +1,69 @@
 <script setup lang="ts">
-import { ChevronDownIcon } from "@heroicons/vue/solid";
+import navigate from "../../utils/navigate";
+import { ChevronDownIcon, SearchIcon } from "@heroicons/vue/solid";
 import { ref, computed } from "vue";
+import { GridColumns } from "../../models/grid";
 
-const props = defineProps({
-  columns: { type: Array, required: true },
-  data: { type: Array, required: true },
-});
+// Props
+interface Props {
+  columns: Array<GridColumns>;
+  data: Array<any>;
+  currencySymbol: string;
+}
+const props = defineProps<Props>();
 
+// Data
 const selectedData: any = ref([]);
 
+// Computed
 const indeterminate = computed(
   () =>
     selectedData.value.length > 0 &&
     selectedData.value.length < props.data.length
 );
+
+// Methods
+const classOption = (variant: string): string => {
+  let classCss: string = "";
+  switch (variant) {
+    case "primary":
+      classCss =
+        "text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500";
+      break;
+    case "default":
+      classCss =
+        "border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-indigo-500";
+      break;
+    case "success":
+      classCss =
+        "text-white bg-green-600 hover:bg-green-700 focus:ring-green-500";
+      break;
+    case "danger":
+      classCss = "text-white bg-red-600 hover:bg-red-700 focus:ring-red-500";
+      break;
+    default:
+      break;
+  }
+
+  return classCss;
+};
+
+const handleClick = async (action: any) => {
+  switch (action.actionType) {
+    case "redirect":
+      navigate(action.route);
+      break;
+    case "modal":
+      action.handler();
+      break;
+    case "exec-redirect":
+      action.handler();
+      navigate(action.route);
+      break;
+    default:
+      break;
+  }
+};
 </script>
 
 <template>
@@ -59,77 +109,128 @@ const indeterminate = computed(
                       "
                     />
                   </th>
-                  <th
-                    scope="col"
-                    class="min-w-[12rem] py-3.5 pr-3 text-left text-sm font-semibold text-gray-900"
-                    v-for="column in (columns as any)"
-                    :class="column.class"
-                  >
-                    <a href="#" class="group inline-flex">
-                      {{ column.label }}
-                      <span
-                        class="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible"
-                      >
-                        <ChevronDownIcon
-                          class="invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible"
-                          aria-hidden="true"
-                        />
-                      </span>
-                    </a>
-                  </th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                    <span class="sr-only">Edit</span>
-                  </th>
+
+                  <template v-for="column in columns" :key="column['Id']">
+                    <th
+                      scope="col"
+                      class="min-w-[12rem] py-3.5 pr-3 text-left text-sm font-semibold text-gray-900"
+                      :class="column.class"
+                      v-if="!column.hidden"
+                    >
+                      <a href="#" class="group inline-flex">
+                        {{ column.label }}
+                        <span
+                          class="invisible ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible"
+                        >
+                          <ChevronDownIcon
+                            class="invisible ml-2 h-5 w-5 flex-none rounded text-gray-400 group-hover:visible group-focus:visible"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </a>
+                    </th>
+                  </template>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
                 <tr
-                  v-for="object in (data as any)"
-                  :key="object.ID"
-                  :class="[selectedData.includes(object.ID as never) && 'bg-gray-50']"
+                  v-for="object in data"
+                  :key="object['Id']"
+                  :class="[selectedData.includes(object['Id']) && 'bg-gray-50']"
                 >
                   <td class="relative w-12 px-6 sm:w-16 sm:px-8">
                     <div
-                      v-if="selectedData.includes(object.ID as never)"
+                      v-if="selectedData.includes(object['Id'])"
                       class="absolute inset-y-0 left-0 w-0.5 bg-indigo-600"
                     ></div>
                     <input
                       type="checkbox"
                       class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 sm:left-6"
-                      :value="object.ID"
+                      :value="object['Id']"
                       v-model="selectedData"
                     />
                   </td>
-                  <td
-                    v-for="(column, index) in (columns as any)"
-                    :class="[
-                      'whitespace-nowrap py-4 pr-3 text-sm',
-                      selectedData.includes(object.ID as never) && index == 0
-                        ? 'text-indigo-600'
-                        : index == 0
-                        ? 'text-gray-900 font-medium'
-                        : 'text-gray-500',
-                      column.class,
-                    ]"
-                    :key="index"
-                  >
-                    {{ object[column.label] }}
-                    <dl class="font-normal lg:hidden" v-if="index == 0">
-                      <template v-for="(c, ix) in (columns as any)" :key="ix">
-                        <dt class="sr-only">column.label</dt>
-                        <dd class="mt-1 truncate text-gray-700">
-                          {{ object[c.label] }}
-                        </dd>
-                      </template>
-                    </dl>
-                  </td>
-                  <td
-                    class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6"
-                  >
-                    <a href="#" class="text-indigo-600 hover:text-indigo-900"
-                      >Edit<span class="sr-only">, {{ object.ID }}</span></a
+                  <template v-for="(column, index) in columns" :key="index">
+                    <td
+                      v-if="!column.hidden"
+                      :class="[
+                        'whitespace-nowrap py-4 pr-3 text-sm',
+                        selectedData.includes(object['Id']) && index == 1
+                          ? 'text-indigo-600'
+                          : index == 1
+                          ? 'text-gray-900 font-medium'
+                          : 'text-gray-500',
+                        column.class,
+                        column.field === 'actions'
+                          ? 'flex gap-1 justify-center items-center'
+                          : '',
+                      ]"
                     >
-                  </td>
+                      <template v-if="index !== columns.length - 1">
+                        <template v-if="column.type === 'text'">
+                          {{ object[column.field] }}
+                        </template>
+                        <template v-if="column.type === 'money'">
+                          {{ currencySymbol + " " + object[column.field] }}
+                        </template>
+                        <template v-if="column.type === 'badge'">
+                          <span
+                            class="inline-flex items-center px-3 py-0.5 rounded-full text-sm font-medium bg-green-100 text-green-800"
+                          >
+                            {{ object[column.field] }}
+                          </span>
+                        </template>
+                      </template>
+                      <template v-else>
+                        <template
+                          v-for="(action, index) in columns[columns.length - 1][
+                            'options'
+                          ]"
+                          :key="index"
+                        >
+                          <a
+                            href="#"
+                            class="text-indigo-600 hover:text-indigo-900"
+                            v-if="action.type === 'span'"
+                            @click="handleClick(action)"
+                          >
+                            {{ action.label }}
+                            <span class="sr-only">, {{ object["Id"] }}</span></a
+                          >
+                          <button
+                            v-if="action.type === 'button'"
+                            type="button"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            :class="classOption(action.variant)"
+                            @click="handleClick(action)"
+                          >
+                            {{ action.label }}
+                          </button>
+                          <button
+                            v-if="action.type === 'icon'"
+                            type="button"
+                            class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            :class="classOption(action.variant)"
+                            @click="handleClick(action)"
+                          >
+                            <SearchIcon
+                              class="h-4 w-4 text-white"
+                              aria-hidden="true"
+                              v-if="action.icon === 'SearchIcon'"
+                            />
+                          </button>
+                        </template>
+                      </template>
+                      <dl class="font-normal lg:hidden" v-if="index == 0">
+                        <template v-for="(c, ix) in columns" :key="ix">
+                          <dt class="sr-only">column.label</dt>
+                          <dd class="mt-1 truncate text-gray-700">
+                            {{ object[c.field] }}
+                          </dd>
+                        </template>
+                      </dl>
+                    </td>
+                  </template>
                 </tr>
               </tbody>
             </table>
